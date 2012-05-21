@@ -18,18 +18,24 @@ Install via package control
 <h3>Or</h3>
 
 <h4>Linux</h4>
-<code>git clone https://github.com/theadamlt/Sublime-Gitignore ~/.config/sublime-text-2/Packages/Gitignore</code>
-Make sure that <code>~/.config/sublime-text-2/Packages/Gitignore/gibo</code> is executable
+
+<code>
+git clone https://github.com/theadamlt/Sublime-Gitignore ~/.config/sublime-text-2/Packages/Gitignore
+</code>
+
 
 <h4>Mac</h4>
-<code>git clone https://github.com/theadamlt/Sublime-Gitignore ~/Library/Application\ Support/Sublime\ Text\ 2/Packages/Gitignore</code>
-Make sure that <code>~/Library/Application\ Support/Sublime\ Text\ 2/Packages/Gitignore/gibo</code> is executable
+
+<code>
+git clone https://github.com/theadamlt/Sublime-Gitignore ~/Library/Application\ Support/Sublime\ Text\ 2/Packages/Gitignore
+</code>
+
 
 Make sure that Git is installed
 
 <hr>
 
-The plugin works <a href="https://github.com/simonwhitaker/gitignore-boilerplates">gibo</a> so thanks to Simon Whitaker.
+The plugin works via <a href="https://github.com/simonwhitaker/gitignore-boilerplates">gibo</a> so thanks to Simon Whitaker.
 
 <h2>How bout' Windows support?</h2>
 This plugin doesn't support windows, yet.

@@ -7,7 +7,7 @@ Press <code>Cmd + Shift + P</code> for Mac and <code>Ctrl + Shift + P</code> for
 Write <code>Gitignore</code> and select <code>Gitignore: new gitignore</code>
 
 Then select the desired gitignore boilerplate.<br>
-Then select the desired gitignore global boilerplate. Select "None" for none<br>
+Now select another boilerplate. When you are done, select <code>Done</code>.
 
 Save the newly open file as <code><i>something</i>.gitignore</code> and your done!
 
@@ -37,6 +37,9 @@ Make sure that Git is installed
 
 The plugin works via <a href="https://github.com/simonwhitaker/gitignore-boilerplates">gibo</a> so thanks to Simon Whitaker.
 
+<h2>TODO</h2>
+Remove independence of gibo, create own db of gitignore boilerplates
+
+
 <h2>How bout' Windows support?</h2>
 This plugin doesn't support windows, yet.
-It will eventually, maybe, someday, if you're lucky,  support Windows

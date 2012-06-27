@@ -1,5 +1,5 @@
 import sublime, sublime_plugin
-
+import os.path
 class rungiboCommand(sublime_plugin.WindowCommand, sublime.Window):
 	chosen_array = []
 
@@ -14,6 +14,7 @@ class rungiboCommand(sublime_plugin.WindowCommand, sublime.Window):
 	def first_select(self, index):
 		if index > -1:
 			self.chosen_array.append(self.first_list[index])
+			self.second_list.remove(self.first_list[index])
 			self.window.show_quick_panel(self.second_list, self.second_select)
 
 
@@ -23,13 +24,20 @@ class rungiboCommand(sublime_plugin.WindowCommand, sublime.Window):
 				self.write_file()
 			else:
 				self.chosen_array.append(self.second_list[index])
+				self.second_list.remove(self.second_list[index])
 				self.window.show_quick_panel(self.second_list, self.second_select)
 
 
 	def write_file(self):
+		if os.path.exists(sublime.packages_path()+'/Gitignore'):
+			path = sublime.packages_path()+'/Gitignore/boilerplates/'
+		else:
+			path = sublime.packages_path()+'/Sublime-Gitignore/boilerplates/'
+
 		final = ''
+
 		for bp in self.chosen_array:
-			bpfile = open(sublime.packages_path()+"/Gitignore/boilerplates/"+bp+'.gitignore', 'r');
+			bpfile = open(path+bp+'.gitignore', 'r')
 			text = bpfile.read()
 			bpfile.close()
 
@@ -37,6 +45,6 @@ class rungiboCommand(sublime_plugin.WindowCommand, sublime.Window):
 
 		view = sublime.active_window().new_file()
 		edit = view.begin_edit()
-	   	view.insert(edit, 0, final)
-	   	view.end_edit(edit)
-	   	self.chosen_array = []
+		view.insert(edit, 0, final)
+		view.end_edit(edit)
+		self.chosen_array = []

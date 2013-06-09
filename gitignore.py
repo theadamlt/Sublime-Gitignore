@@ -1,69 +1,100 @@
-import sublime, sublime_plugin
 import os
+import zipfile
 
+import sublime, sublime_plugin
 
-class rungiboCommand(sublime_plugin.WindowCommand, sublime.Window):
+class rungiboCommand(sublime_plugin.WindowCommand):
 
-	chosen_array = []
+	_bp_list = []
+	_bp_folder = 'boilerplates'
+	_package_path = ''
 
-	first_list = ['Actionscript', 'Android', 'Autotools', 'CakePHP', 'CFWheels', 'C', 'C++', 'Clojure', 'CMake', 'CodeIgniter', 'Compass', 'Concrete5', 'Coq', 'CSharp', 'Delphi', 'Django', 'Drupal', 'Erlang', 'ExpressionEngine', 'Finale', 'ForceDotCom', 'FuelPHP', 'gcov', 'Go', 'Grails', 'GWT', 'Haskell', 'Java', 'Jboss', 'Jekyll', 'Joomla', 'Jython', 'Kohana', 'LaTeX', 'Leiningen', 'LemonStand', 'Lilypond', 'Lithium', 'Magento', 'Maven', 'nanoc', 'Node', 'Objective-C', 'OCaml', 'Opa', 'opencart', 'OracleForms', 'Perl', 'PlayFramework', 'Python', 'Qooxdoo', 'Rails', 'R', 'RhodesRhomobile', 'Ruby', 'Scala', 'SeamGen', 'SketchUp', 'SugarCRM', 'Symfony2', 'Symfony', 'SymphonyCMS', 'Target3001', 'Tasm', 'Textpattern', 'TurboGears2', 'Unity', 'VB.Net', 'Waf', 'Wordpress', 'Yii', 'ZendFramework', 'Archives', 'CVS', 'Eclipse', 'Emacs', 'Espresso', 'FlexBuilder', 'IntelliJ', 'Linux', 'Matlab', 'Mercurial', 'ModelSim', 'MonoDevelop', 'NetBeans', 'OSX', 'Quartus2', 'Redcar', 'RubyMine', 'SASS', 'SBT', 'SublimeText', 'SVN', 'Tags', 'TextMate', 'vim', 'VisualStudio', 'Windows', 'XilinxISE']
+	def _find_path(self):
+		if not self._package_path:
+			paths = [os.path.join(sublime.installed_packages_path(), 'Gitignore.sublime-package'),
+					 os.path.join(sublime.packages_path(), 'Gitignore'),
+					 os.path.join(sublime.packages_path(), 'Sublime-Gitignore')]
+			for path in paths:
+				if os.path.exists(path):
+					self._package_path = path
+					break
 
-	second_list = ['Done', 'Actionscript', 'Android', 'Autotools', 'CakePHP', 'CFWheels', 'C', 'C++', 'Clojure', 'CMake', 'CodeIgniter', 'Compass', 'Concrete5', 'Coq', 'CSharp', 'Delphi', 'Django', 'Drupal', 'Erlang', 'ExpressionEngine', 'Finale', 'ForceDotCom', 'FuelPHP', 'gcov', 'Go', 'Grails', 'GWT', 'Haskell', 'Java', 'Jboss', 'Jekyll', 'Joomla', 'Jython', 'Kohana', 'LaTeX', 'Leiningen', 'LemonStand', 'Lilypond', 'Lithium', 'Magento', 'Maven', 'nanoc', 'Node', 'Objective-C', 'OCaml', 'Opa', 'opencart', 'OracleForms', 'Perl', 'PlayFramework', 'Python', 'Qooxdoo', 'Rails', 'R', 'RhodesRhomobile', 'Ruby', 'Scala', 'SeamGen', 'SketchUp', 'SugarCRM', 'Symfony2', 'Symfony', 'SymphonyCMS', 'Target3001', 'Tasm', 'Textpattern', 'TurboGears2', 'Unity', 'VB.Net', 'Waf', 'Wordpress', 'Yii', 'ZendFramework', 'Archives', 'CVS', 'Eclipse', 'Emacs', 'Espresso', 'FlexBuilder', 'IntelliJ', 'Linux', 'Matlab', 'Mercurial', 'ModelSim', 'MonoDevelop', 'NetBeans', 'OSX', 'Quartus2', 'Redcar', 'RubyMine', 'SASS', 'SBT', 'SublimeText', 'SVN', 'Tags', 'TextMate', 'vim', 'VisualStudio', 'Windows', 'XilinxISE']
+		return self._package_path
 
+	def _listdir(self):
+		package_path = self._find_path()
+		if zipfile.is_zipfile(package_path):
+			# Dealing with .sublime-package file
+			package = zipfile.ZipFile(package_path, "r")
+			path = self._bp_folder + "/"
+			return [f.replace(path, '') for f in package.namelist() if f.startswith(path)]
+		else:
+			return os.listdir(os.path.join(package_path, self._bp_folder))
 
-	def get_files(self):
-		dir_list = os.listdir("/home/adam/Dropbox/Programming/Random/Sublime/Sublime-gitignore/boilerplates")
-		count = 0
-		while count < len(dir_list):
-			dir_list[count] = dir_list[count].replace('.gitignore', '')
-			count = count+1
+	def _loadfile(self, bp):
+		package_path = self._find_path()
+		if zipfile.is_zipfile(package_path):
+			# Dealing with .sublime-package file
+			package = zipfile.ZipFile(package_path, 'r')
+			path = self._bp_folder + "/" + bp
+			f = package.open(path, 'r')
+			text = f.read().decode()
+			f.close()
+			return text
+		else:
+			file_path = os.path.join(package_path, self._bp_folder, bp)
+			f = open(file_path, 'r')
+			text = f.read().decode()
+			f.close()
+			return text
 
-		print dir_list
+	def build_list(self):
+		if not self._bp_list:
+			for dir in self._listdir():
+				self._bp_list.append(dir.replace('.gitignore', ''))
+
+		self.chosen_array = []
+		self.first_list = self._bp_list[:]  # Copy _bp_list
+		self.second_list = ['Done'] + self._bp_list
+
+	def show_quick_panel(self, options, done):
+		# Fix from
+		# http://www.sublimetext.com/forum/viewtopic.php?f=6&t=10999
+		sublime.set_timeout(lambda: self.window.show_quick_panel(options, done), 10)
 
 	def run(self):
-		self.get_files
-		self.window.show_quick_panel(self.first_list, self.first_select)
+		self.build_list()
+		self.show_quick_panel(self.first_list, self.first_select)
 
 	def first_select(self, index):
 		if index > -1:
 			self.chosen_array.append(self.first_list[index])
 			self.second_list.remove(self.first_list[index])
-			self.window.show_quick_panel(self.second_list, self.second_select)
-
+			self.show_quick_panel(self.second_list, self.second_select)
 
 	def second_select(self, index):
-		if index > -1:
-			if index == 0:
-				self.write_file()
-			else:
-				self.chosen_array.append(self.second_list[index])
-				self.second_list.remove(self.second_list[index])
-				self.window.show_quick_panel(self.second_list, self.second_select)
-
+		if index == 0:
+			self.write_file()
+			self.build_list()
+		elif index > 0:
+			self.chosen_array.append(self.second_list[index])
+			self.second_list.remove(self.second_list[index])
+			self.show_quick_panel(self.second_list, self.second_select)
 
 	def write_file(self):
-		if os.path.exists(sublime.packages_path()+'/Gitignore'):
-			path = sublime.packages_path()+'/Gitignore/boilerplates/'
-		else:
-			path = sublime.packages_path()+'/Sublime-Gitignore/boilerplates/'
-
 		final = ''
 
 		for bp in self.chosen_array:
-			bpfile = open(path+bp+'.gitignore', 'r')
-			text = bpfile.read()
-			bpfile.close()
+			text = self._loadfile(bp + ".gitignore")
+			final = final + '###' + bp + '###\n\n' + text + '\n\n'
 
-			final = final + '###'+bp+'###\n \n'+text+'\n\n'
-
+		final = final.strip()
 		view = sublime.active_window().new_file()
-		edit = view.begin_edit()
-		view.insert(edit, 0, final)
-		view.set_name('.gitignore')
-		view.end_edit(edit)
+		view.run_command('writegibo', {'bp': final})
 
 
-		self.chosen_array = []
-		self.first_list = ['Actionscript', 'Android', 'Autotools', 'CakePHP', 'CFWheels', 'C', 'C++', 'Clojure', 'CMake', 'CodeIgniter', 'Compass', 'Concrete5', 'Coq', 'CSharp', 'Delphi', 'Django', 'Drupal', 'Erlang', 'ExpressionEngine', 'Finale', 'ForceDotCom', 'FuelPHP', 'gcov', 'Go', 'Grails', 'GWT', 'Haskell', 'Java', 'Jboss', 'Jekyll', 'Joomla', 'Jython', 'Kohana', 'LaTeX', 'Leiningen', 'LemonStand', 'Lilypond', 'Lithium', 'Magento', 'Maven', 'nanoc', 'Node', 'Objective-C', 'OCaml', 'Opa', 'opencart', 'OracleForms', 'Perl', 'PlayFramework', 'Python', 'Qooxdoo', 'Rails', 'R', 'RhodesRhomobile', 'Ruby', 'Scala', 'SeamGen', 'SketchUp', 'SugarCRM', 'Symfony2', 'Symfony', 'SymphonyCMS', 'Target3001', 'Tasm', 'Textpattern', 'TurboGears2', 'Unity', 'VB.Net', 'Waf', 'Wordpress', 'Yii', 'ZendFramework', 'Archives', 'CVS', 'Eclipse', 'Emacs', 'Espresso', 'FlexBuilder', 'IntelliJ', 'Linux', 'Matlab', 'Mercurial', 'ModelSim', 'MonoDevelop', 'NetBeans', 'OSX', 'Quartus2', 'Redcar', 'RubyMine', 'SASS', 'SBT', 'SublimeText', 'SVN', 'Tags', 'TextMate', 'vim', 'VisualStudio', 'Windows', 'XilinxISE']
+class writegiboCommand(sublime_plugin.TextCommand):
 
-		self.second_list = ['Done', 'Actionscript', 'Android', 'Autotools', 'CakePHP', 'CFWheels', 'C', 'C++', 'Clojure', 'CMake', 'CodeIgniter', 'Compass', 'Concrete5', 'Coq', 'CSharp', 'Delphi', 'Django', 'Drupal', 'Erlang', 'ExpressionEngine', 'Finale', 'ForceDotCom', 'FuelPHP', 'gcov', 'Go', 'Grails', 'GWT', 'Haskell', 'Java', 'Jboss', 'Jekyll', 'Joomla', 'Jython', 'Kohana', 'LaTeX', 'Leiningen', 'LemonStand', 'Lilypond', 'Lithium', 'Magento', 'Maven', 'nanoc', 'Node', 'Objective-C', 'OCaml', 'Opa', 'opencart', 'OracleForms', 'Perl', 'PlayFramework', 'Python', 'Qooxdoo', 'Rails', 'R', 'RhodesRhomobile', 'Ruby', 'Scala', 'SeamGen', 'SketchUp', 'SugarCRM', 'Symfony2', 'Symfony', 'SymphonyCMS', 'Target3001', 'Tasm', 'Textpattern', 'TurboGears2', 'Unity', 'VB.Net', 'Waf', 'Wordpress', 'Yii', 'ZendFramework', 'Archives', 'CVS', 'Eclipse', 'Emacs', 'Espresso', 'FlexBuilder', 'IntelliJ', 'Linux', 'Matlab', 'Mercurial', 'ModelSim', 'MonoDevelop', 'NetBeans', 'OSX', 'Quartus2', 'Redcar', 'RubyMine', 'SASS', 'SBT', 'SublimeText', 'SVN', 'Tags', 'TextMate', 'vim', 'VisualStudio', 'Windows', 'XilinxISE']
+	def run(self, edit, **kwargs):
+		self.view.insert(edit, 0, kwargs['bp'])
+		self.view.set_name('.gitignore')

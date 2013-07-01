@@ -1,0 +1,20 @@
+{
+	"schema_version": "1.2",
+	"packages": [
+		{
+			"name": "Gitignore",
+			"description": "An easy way to fetch gitignore boilerplates from github",
+			"author": "Adam Lilienfeldt",
+			"homepage": "https://github.com/kevinxucs/Sublime-Gitignore",
+			"last_modified": "2013-06-09 14:36:00",
+			"platforms": {
+				"*": [
+					{
+						"version": "2013.06.09.14.36.00",
+						"url": "https://nodeload.github.com/kevinxucs/Sublime-Gitignore/zip/master"
+					}
+				]
+			}
+		}
+	]
+}
